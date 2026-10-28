@@ -142,11 +142,81 @@
             android:clipToPadding="false" android:paddingBottom="120dp" />
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/updateBar"
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_gravity="top" android:background="#E61E88FF" android:gravity="center"
-        android:padding="8dp" android:textColor="#FFFFFF" android:textSize="15sp" android:visibility="gone" />
+    <LinearLayout
+        android:id="@+id/updateCard"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal" android:layout_marginTop="24dp"
+        android:background="@drawable/overlay_card" android:gravity="center_vertical"
+        android:orientation="horizontal" android:paddingStart="18dp" android:paddingTop="16dp"
+        android:paddingEnd="28dp" android:paddingBottom="16dp" android:visibility="gone">
+        <ImageView android:layout_width="48dp" android:layout_height="48dp" android:src="@mipmap/ic_launcher" />
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="16dp" android:orientation="vertical">
+            <TextView android:id="@+id/upTitle"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold" />
+            <TextView android:id="@+id/upSub"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp"
+                android:textColor="#B3FFFFFF" android:textSize="14sp" />
+            <ProgressBar android:id="@+id/upProg" style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="280dp" android:layout_height="4dp" android:layout_marginTop="10dp"
+                android:max="100" android:progressDrawable="@drawable/prog" android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/tour"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="#D9000000" android:clickable="true" android:visibility="gone">
+        <LinearLayout
+            android:layout_width="600dp" android:layout_height="wrap_content" android:layout_gravity="center"
+            android:background="@drawable/overlay_card" android:gravity="center_horizontal"
+            android:orientation="vertical" android:padding="40dp">
+            <TextView android:id="@+id/tourStep"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:letterSpacing="0.12" android:textAllCaps="true"
+                android:textColor="#80FFFFFF" android:textSize="12sp" android:textStyle="bold" />
+            <FrameLayout android:layout_width="match_parent" android:layout_height="180dp" android:layout_marginTop="20dp">
+                <ImageView android:id="@+id/tourLogo"
+                    android:layout_width="320dp" android:layout_height="132dp" android:layout_gravity="center"
+                    android:scaleType="fitCenter" android:src="@drawable/wordmark" />
+                <FrameLayout android:id="@+id/dpad"
+                    android:layout_width="180dp" android:layout_height="180dp" android:layout_gravity="center"
+                    android:background="@drawable/dpad_ring">
+                    <ImageView android:id="@+id/dUp" android:layout_width="40dp" android:layout_height="20dp"
+                        android:layout_gravity="top|center_horizontal" android:layout_marginTop="22dp" android:src="@drawable/chevron_up" />
+                    <ImageView android:id="@+id/dDown" android:layout_width="40dp" android:layout_height="20dp"
+                        android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="22dp" android:src="@drawable/chevron_down" />
+                    <ImageView android:id="@+id/dLeft" android:layout_width="40dp" android:layout_height="20dp"
+                        android:layout_gravity="start|center_vertical" android:layout_marginStart="8dp"
+                        android:rotation="-90" android:src="@drawable/chevron_up" />
+                    <ImageView android:id="@+id/dRight" android:layout_width="40dp" android:layout_height="20dp"
+                        android:layout_gravity="end|center_vertical" android:layout_marginEnd="8dp"
+                        android:rotation="90" android:src="@drawable/chevron_up" />
+                    <TextView android:id="@+id/dOk" android:layout_width="64dp" android:layout_height="64dp"
+                        android:layout_gravity="center" android:background="@drawable/dpad_ok" android:gravity="center"
+                        android:text="OK" android:textColor="#07080B" android:textSize="16sp" android:textStyle="bold" />
+                </FrameLayout>
+                <TextView android:id="@+id/keycap"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
+                    android:background="@drawable/keycap" android:paddingStart="32dp" android:paddingTop="18dp"
+                    android:paddingEnd="32dp" android:paddingBottom="18dp"
+                    android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold" />
+            </FrameLayout>
+            <TextView android:id="@+id/tourTitle"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp"
+                android:gravity="center" android:textColor="#FFFFFF" android:textSize="28sp" android:textStyle="bold" />
+            <TextView android:id="@+id/tourBody"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                android:gravity="center" android:lineSpacingMultiplier="1.15" android:textColor="#B3FFFFFF" android:textSize="17sp" />
+            <LinearLayout android:id="@+id/tourDots"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="28dp"
+                android:orientation="horizontal" />
+            <TextView android:id="@+id/tourHint"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp"
+                android:textColor="#80FFFFFF" android:textSize="14sp" />
+        </LinearLayout>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/status"

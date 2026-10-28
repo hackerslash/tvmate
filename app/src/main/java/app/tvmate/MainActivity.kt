@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -42,6 +43,8 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+private const val TOUR_VERSION = 1
 
 @OptIn(UnstableApi::class)
 class MainActivity : Activity(), Remote.Host {
@@ -139,12 +142,111 @@ class MainActivity : Activity(), Remote.Host {
         }
         if (!repo.configured) openSettings()
         scope.launch {
-            val r = withContext(Dispatchers.IO) { Update.check() } ?: return@launch
-            findViewById<TextView>(R.id.updateBar).apply {
-                text = "TVMate v${r.version} is available. Open the channel list → Settings to install."
-                visibility = View.VISIBLE
-                ui.postDelayed({ visibility = View.GONE }, 15_000)
+            update = withContext(Dispatchers.IO) { Update.check() }
+            maybeShowUpdate()
+        }
+        if (repo.prefs.getInt("tour_v", 0) < TOUR_VERSION) showTour(0)
+    }
+
+    // ---- update prompt: OK installs, BACK dismisses ----
+
+    private var update: Update.Release? = null
+    private var installing = false
+    private val updateCard get() = findViewById<View>(R.id.updateCard)
+
+    private fun maybeShowUpdate() {
+        val r = update ?: return
+        if (tour.visibility == View.VISIBLE || installing) return
+        findViewById<TextView>(R.id.upTitle).text = "TVMate ${r.version} is ready"
+        findViewById<TextView>(R.id.upSub).text = "Press OK to install  ·  BACK to dismiss"
+        findViewById<View>(R.id.upProg).visibility = View.GONE
+        updateCard.visibility = View.VISIBLE
+        ui.removeCallbacks(hideUpdate)
+        ui.postDelayed(hideUpdate, 30_000)
+    }
+
+    private val hideUpdate = Runnable { if (!installing) updateCard.visibility = View.GONE }
+
+    private fun installUpdate() {
+        val r = update ?: return
+        installing = true
+        ui.removeCallbacks(hideUpdate)
+        val sub = findViewById<TextView>(R.id.upSub)
+        val bar = findViewById<ProgressBar>(R.id.upProg)
+        sub.text = "Downloading…"
+        bar.visibility = View.VISIBLE
+        bar.progress = 0
+        scope.launch {
+            val err = withContext(Dispatchers.IO) {
+                runCatching { Update.install(this@MainActivity, r) { p -> runOnUiThread { bar.progress = p; sub.text = "Downloading…  $p%" } } }.exceptionOrNull()
             }
+            installing = false
+            if (err == null) updateCard.visibility = View.GONE
+            else { sub.text = "Download failed. Press OK to retry  ·  BACK to dismiss"; bar.visibility = View.GONE }
+        }
+    }
+
+    // ---- guided tour, shown once per TOUR_VERSION (so existing installs see it after updating) ----
+
+    private class Step(val title: String, val body: String, val keys: Set<String> = emptySet(), val keycap: String? = null)
+
+    private val steps = listOf(
+        Step("Welcome to TVMate", "Live TV without the clutter. Here's how to use it with your remote."),
+        Step("Change channel", "Press UP for the next channel and DOWN for the previous one.", setOf("up", "down")),
+        Step("Open the guide", "Press LEFT or OK to browse categories, see what's on now and next, and search.", setOf("left", "ok")),
+        Step("What's playing", "Press RIGHT to see the current programme, its time and description.", setOf("right")),
+        Step("Settings", "Press MENU to add Xtream providers, switch sources or turn on the phone remote.", keycap = "≡  MENU"),
+        Step("Going back", "BACK closes the guide. Press BACK twice to leave TVMate.", keycap = "BACK"),
+    )
+    private var step = 0
+    private val tour get() = findViewById<View>(R.id.tour)
+
+    private fun showTour(i: Int) {
+        step = i.coerceIn(0, steps.size - 1)
+        val s = steps[step]
+        updateCard.visibility = View.GONE
+        tour.visibility = View.VISIBLE
+        findViewById<TextView>(R.id.tourStep).text = "Step ${step + 1} of ${steps.size}"
+        findViewById<TextView>(R.id.tourTitle).text = s.title
+        findViewById<TextView>(R.id.tourBody).text = s.body
+        findViewById<View>(R.id.tourLogo).visibility = if (step == 0) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.dpad).visibility = if (step > 0 && s.keycap == null) View.VISIBLE else View.GONE
+        findViewById<TextView>(R.id.keycap).apply { visibility = if (s.keycap != null) View.VISIBLE else View.GONE; text = s.keycap }
+        mapOf(R.id.dUp to "up", R.id.dDown to "down", R.id.dLeft to "left", R.id.dRight to "right").forEach { (id, k) ->
+            findViewById<ImageView>(id).apply {
+                val on = k in s.keys
+                alpha = if (on) 1f else 0.25f
+                setColorFilter(if (on) 0xFF1E88FF.toInt() else 0xFFFFFFFF.toInt())
+                scaleX = if (on) 1.3f else 1f
+                scaleY = scaleX
+            }
+        }
+        findViewById<View>(R.id.dOk).alpha = if ("ok" in s.keys) 1f else 0.25f
+        findViewById<LinearLayout>(R.id.tourDots).apply {
+            removeAllViews()
+            steps.indices.forEach { d ->
+                addView(View(context).apply {
+                    setBackgroundResource(R.drawable.dot)
+                    alpha = if (d == step) 1f else 0.25f
+                    layoutParams = LinearLayout.LayoutParams(dp(if (d == step) 22 else 8), dp(8)).apply { marginStart = dp(4); marginEnd = dp(4) }
+                })
+            }
+        }
+        findViewById<TextView>(R.id.tourHint).text =
+            if (step == steps.size - 1) "OK  Start watching" else "OK  Next     ◀  Back     BACK  Skip"
+    }
+
+    private fun endTour() {
+        tour.visibility = View.GONE
+        repo.prefs.edit().putInt("tour_v", TOUR_VERSION).apply()
+        maybeShowUpdate()
+    }
+
+    private fun tourKey(code: Int) {
+        when (code) {
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_RIGHT ->
+                if (step == steps.size - 1) endTour() else showTour(step + 1)
+            KeyEvent.KEYCODE_DPAD_LEFT -> showTour(step - 1)
         }
     }
 
@@ -242,6 +344,9 @@ class MainActivity : Activity(), Remote.Host {
         val raw = c.urls[urlIdx]
         val item = MediaItem.Builder().setUri(if (c.mi != null) MiTv.fill(raw) else raw)
         if (c.mi != null) item.setMimeType(MimeTypes.APPLICATION_M3U8)
+        // A reused decoder kept the previous channel's buffer size: a 720p channel after a 1080p one
+        // drew in the corner over the old frame. stop() releases it so each channel starts clean.
+        player.stop()
         player.setMediaItem(item.build())
         player.prepare()
         player.play()
@@ -272,6 +377,10 @@ class MainActivity : Activity(), Remote.Host {
             return true
         }
         if (e.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(e)
+        if (tour.visibility == View.VISIBLE) { tourKey(e.keyCode); return true }
+        if (e.keyCode == KeyEvent.KEYCODE_MENU || e.keyCode == KeyEvent.KEYCODE_SETTINGS) { openSettings(); return true }
+        if (updateCard.visibility == View.VISIBLE && guide.visibility != View.VISIBLE && !installing &&
+            (e.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || e.keyCode == KeyEvent.KEYCODE_ENTER)) { installUpdate(); return true }
         if (guide.visibility == View.VISIBLE) {
             if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && rows.hasFocus()) { focusRail(); return true }
             if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN &&
@@ -282,7 +391,7 @@ class MainActivity : Activity(), Remote.Host {
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> zap(+1)
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> zap(-1)
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
-            KeyEvent.KEYCODE_MENU, KeyEvent.KEYCODE_GUIDE -> openGuide()
+            KeyEvent.KEYCODE_GUIDE -> openGuide()
             KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_INFO -> showBanner()
             else -> return super.dispatchKeyEvent(e)
         }
@@ -290,6 +399,8 @@ class MainActivity : Activity(), Remote.Host {
     }
 
     private fun back() = when {
+        tour.visibility == View.VISIBLE -> endTour()
+        updateCard.visibility == View.VISIBLE && !installing -> updateCard.visibility = View.GONE
         guide.visibility == View.VISIBLE -> closeGuide()
         banner.visibility == View.VISIBLE -> banner.visibility = View.GONE
         System.currentTimeMillis() - lastBack < 2000 -> finish()

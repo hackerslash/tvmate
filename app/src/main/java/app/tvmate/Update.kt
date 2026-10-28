@@ -34,11 +34,23 @@ object Update {
     }
 
     /** Blocking download, then hands the APK to the system installer. */
-    fun install(ctx: Context, r: Release) {
+    fun install(ctx: Context, r: Release, progress: (Int) -> Unit = {}) {
         val f = File(ctx.cacheDir, "update.apk")
         Net.get(Net.http, r.apk).use { resp ->
             check(resp.isSuccessful) { "Download failed: HTTP ${resp.code}" }
-            f.outputStream().use { resp.body!!.byteStream().copyTo(it) }
+            val total = resp.body!!.contentLength()
+            f.outputStream().use { out ->
+                val inp = resp.body!!.byteStream()
+                val buf = ByteArray(64 * 1024)
+                var done = 0L
+                while (true) {
+                    val n = inp.read(buf)
+                    if (n < 0) break
+                    out.write(buf, 0, n)
+                    done += n
+                    if (total > 0) progress((done * 100 / total).toInt())
+                }
+            }
         }
         val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.files", f)
         ctx.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
