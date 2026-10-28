@@ -1,0 +1,36 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build signed APK
+        env:
+          TVMATE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          TVMATE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
+          export TVMATE_KEYSTORE="$RUNNER_TEMP/release.jks"
+          VERSION="${GITHUB_REF_NAME#v}"
+          ./gradlew testReleaseUnitTest assembleRelease -PversionName="$VERSION" -PversionCode="${{ github.run_number }}"
+          cp app/build/outputs/apk/release/app-release.apk "TVMate-$VERSION.apk"
+
+      - name: Release on this repo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" TVMate-*.apk --generate-notes
+

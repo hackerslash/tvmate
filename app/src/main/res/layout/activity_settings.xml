@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#07080B" android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="300dp" android:layout_height="match_parent"
+        android:background="@drawable/side" android:orientation="vertical"
+        android:paddingStart="48dp" android:paddingTop="56dp" android:paddingEnd="32dp" android:paddingBottom="40dp">
+        <ImageView android:layout_width="220dp" android:layout_height="90dp" android:layout_marginStart="-14dp"
+            android:adjustViewBounds="true" android:scaleType="fitStart" android:src="@drawable/wordmark" />
+        <TextView android:id="@+id/version" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="6dp" android:textColor="#80FFFFFF" android:textSize="14sp" />
+        <TextView android:id="@+id/updateStatus" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="22dp" android:text="You're on the latest version."
+            android:textColor="#B3FFFFFF" android:textSize="14sp" />
+        <Button android:id="@+id/update" style="@style/Pill" android:layout_marginTop="12dp" android:visibility="gone" />
+        <Button android:id="@+id/save" style="@style/Pill" android:layout_width="match_parent" android:layout_marginTop="36dp" android:text="Save and reload" />
+        <Button android:id="@+id/add" style="@style/Pill" android:layout_width="match_parent" android:layout_marginTop="12dp" android:text="+ Add provider" />
+        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Press BACK to return without saving."
+            android:textColor="#4DFFFFFF" android:textSize="13sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+        android:clipToPadding="false" android:paddingStart="48dp" android:paddingEnd="64dp" android:scrollbars="none">
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingTop="26dp" android:paddingBottom="60dp">
+
+            <TextView style="@style/Section" android:text="Phone remote" />
+
+            <LinearLayout android:id="@+id/remoteRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:background="@drawable/row" android:focusable="true" android:gravity="center_vertical"
+                android:orientation="horizontal" android:padding="18dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="Phone remote" />
+                    <TextView style="@style/RowSub" android:text="Control TVMate from your phone on the same Wi-Fi." />
+                </LinearLayout>
+                <Switch android:id="@+id/remote" style="@style/Toggle" android:layout_marginStart="16dp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/remoteCard"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                android:background="@drawable/card" android:gravity="center_vertical"
+                android:orientation="horizontal" android:padding="18dp" android:visibility="gone">
+                <ImageView android:id="@+id/qr"
+                    android:layout_width="150dp" android:layout_height="150dp"
+                    android:background="@drawable/qr_bg" android:padding="8dp" />
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:layout_marginStart="24dp" android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="Manage TVMate from your phone" android:textStyle="bold" />
+                    <TextView style="@style/RowSub" android:layout_marginTop="6dp"
+                        android:text="Scan with your phone camera. Browse and play channels, pin favourites, manage providers and update the app." />
+                    <TextView android:id="@+id/remoteUrl"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp"
+                        android:textColor="#1E88FF" android:textIsSelectable="false" android:textSize="15sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView style="@style/Section" android:text="Sources" />
+
+            <LinearLayout android:id="@+id/miRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:background="@drawable/row" android:focusable="true" android:gravity="center_vertical"
+                android:orientation="horizontal" android:padding="18dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="Free channels" />
+                    <TextView style="@style/RowSub" android:text="Xiaomi TV+ catalogue from every region, deduplicated and dead channels removed" />
+                </LinearLayout>
+                <Switch android:id="@+id/mi" style="@style/Toggle" android:layout_marginStart="16dp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/extrasRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                android:background="@drawable/row" android:focusable="true" android:gravity="center_vertical"
+                android:orientation="horizontal" android:padding="18dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="24/7, PPV and event channels" />
+                    <TextView style="@style/RowSub" android:text="Off keeps provider lists to real live channels" />
+                </LinearLayout>
+                <Switch android:id="@+id/extras" style="@style/Toggle" android:layout_marginStart="16dp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/refreshRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                android:background="@drawable/row" android:focusable="true" android:gravity="center_vertical"
+                android:orientation="horizontal" android:padding="18dp">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView style="@style/RowTitle" android:text="Refresh channel lists" />
+                    <TextView style="@style/RowSub" android:text="Re-download catalogues and re-check free channels. Press OK to change." />
+                </LinearLayout>
+                <TextView android:id="@+id/refresh"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp"
+                    android:textColor="#1E88FF" android:textSize="16sp" android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView style="@style/Section" android:text="Xtream providers" />
+            <TextView android:id="@+id/empty"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="No providers yet. Add one to merge its channels into the guide."
+                android:textColor="#80FFFFFF" android:textSize="14sp" />
+            <LinearLayout android:id="@+id/providers"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

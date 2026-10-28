@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#07080B">
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/player"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_gravity="top|end"
+        android:focusable="false"
+        app:surface_type="texture_view"
+        app:use_controller="false"
+        app:shutter_background_color="#07080B" />
+
+    <FrameLayout
+        android:id="@+id/banner"
+        android:layout_width="match_parent" android:layout_height="230dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/grad_bottom"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="112dp" android:layout_height="wrap_content"
+            android:layout_gravity="bottom" android:layout_marginStart="50dp" android:layout_marginBottom="30dp"
+            android:gravity="center_horizontal" android:orientation="vertical">
+            <ImageView android:layout_width="32dp" android:layout_height="16dp" android:src="@drawable/chevron_up" />
+            <FrameLayout android:layout_width="112dp" android:layout_height="63dp" android:layout_marginTop="8dp" android:background="@drawable/card">
+                <TextView android:id="@+id/bLogoText" style="@style/LogoText" android:textSize="12sp" />
+                <ImageView android:id="@+id/bLogo"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:padding="4dp" android:scaleType="fitCenter" />
+            </FrameLayout>
+            <TextView android:id="@+id/bNum"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                android:textColor="#B3FFFFFF" android:textSize="17sp" android:textStyle="bold" />
+            <ImageView android:layout_width="32dp" android:layout_height="16dp" android:layout_marginTop="4dp" android:src="@drawable/chevron_down" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_gravity="bottom" android:layout_marginStart="192dp" android:layout_marginEnd="60dp" android:layout_marginBottom="44dp"
+            android:orientation="vertical">
+            <TextView android:id="@+id/bName"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:singleLine="true" android:textColor="#B3FFFFFF" android:textSize="14sp" />
+            <TextView android:id="@+id/bTitle"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:ellipsize="end" android:singleLine="true" android:textColor="#FFFFFF" android:textSize="30sp" android:textStyle="bold" />
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal">
+                <TextView android:id="@+id/bTime"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF" android:textSize="16sp" />
+                <ProgressBar android:id="@+id/bProg" style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="96dp" android:layout_height="4dp" android:layout_marginStart="10dp"
+                    android:max="1000" android:progressDrawable="@drawable/prog" />
+            </LinearLayout>
+            <TextView android:id="@+id/bDesc"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp"
+                android:ellipsize="end" android:maxLines="2" android:textColor="#B3FFFFFF" android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/hint"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="top|end" android:layout_marginTop="28dp" android:layout_marginEnd="44dp"
+        android:shadowColor="#CC000000" android:shadowRadius="6"
+        android:text="Press LEFT ◀ to open the channel list"
+        android:textColor="#FFFFFF" android:textSize="18sp" android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/guide"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="120dp" android:layout_height="180dp"
+            android:layout_gravity="top|end" android:layout_marginEnd="250dp"
+            android:background="@drawable/grad_left" />
+
+        <LinearLayout
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="60dp" android:layout_marginTop="70dp" android:orientation="horizontal">
+            <FrameLayout android:layout_width="100dp" android:layout_height="130dp" android:background="@drawable/card">
+                <TextView android:id="@+id/gLogoText" style="@style/LogoText" android:textSize="15sp" />
+                <ImageView android:id="@+id/gLogo"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:padding="8dp" android:scaleType="fitCenter" />
+            </FrameLayout>
+            <LinearLayout android:layout_width="360dp" android:layout_height="wrap_content"
+                android:layout_marginStart="20dp" android:orientation="vertical">
+                <TextView android:id="@+id/gTitle"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:ellipsize="end" android:maxLines="2" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold" />
+                <TextView android:id="@+id/gTime"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                    android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+                <TextView android:id="@+id/gDesc"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+                    android:ellipsize="end" android:maxLines="3" android:textColor="#B3FFFFFF" android:textSize="13sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rail"
+            android:layout_width="210dp" android:layout_height="match_parent"
+            android:layout_marginStart="44dp" android:layout_marginTop="262dp"
+            android:clipToPadding="false" android:paddingBottom="40dp" />
+
+        <TextView android:id="@+id/gCat"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="289dp" android:layout_marginTop="262dp"
+            android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="bold" />
+
+        <LinearLayout android:id="@+id/searchBar"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginStart="289dp" android:layout_marginTop="232dp" android:layout_marginEnd="60dp"
+            android:gravity="center_vertical" android:orientation="horizontal" android:visibility="gone">
+            <EditText android:id="@+id/gSearch"
+                android:layout_width="460dp" android:layout_height="44dp"
+                android:background="@drawable/input" android:drawablePadding="10dp"
+                android:hint="⌕  Channel name, e.g. sky sports"
+                android:imeOptions="actionSearch|flagNoExtractUi" android:inputType="text"
+                android:paddingHorizontal="16dp" android:singleLine="true"
+                android:textColor="#FFFFFF" android:textColorHint="#66FFFFFF" android:textSize="16sp" />
+            <TextView android:id="@+id/gSearchCount"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp"
+                android:textColor="#99FFFFFF" android:textSize="14sp" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/gEmpty"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="289dp" android:layout_marginTop="320dp"
+            android:textColor="#80FFFFFF" android:textSize="16sp" android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rows"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:layout_marginStart="289dp" android:layout_marginTop="288dp"
+            android:clipToPadding="false" android:paddingBottom="120dp" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/updateBar"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_gravity="top" android:background="#E61E88FF" android:gravity="center"
+        android:padding="8dp" android:textColor="#FFFFFF" android:textSize="15sp" android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="center" android:gravity="center"
+        android:shadowColor="#CC000000" android:shadowRadius="6"
+        android:textColor="#FFFFFF" android:textSize="18sp" android:visibility="gone" />
+</FrameLayout>

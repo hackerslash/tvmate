@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>TVMate Remote</title>
+<style>
+  :root {
+    --bg: #000000; --panel: #101319; --card: #161A21; --card2: #1D222B; --line: #262C36;
+    --text: #F4F6FA; --dim: #9AA3B2; --faint: #5E6776;
+    --blue: #1E88FF; --blue2: #0F6AD6; --magenta: #C33CFF; --cyan: #19D3FF;
+    --red: #FF6B72; --green: #3DDC97;
+    --r: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  button, input, select { font: inherit; color: inherit; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+
+  header { padding: 22px 0 6px; display: flex; align-items: center; gap: 12px; }
+  header img { height: 34px; }
+  header .dev { margin-left: auto; text-align: right; color: var(--dim); font-size: 12px; line-height: 1.3; }
+  header .dev b { color: var(--text); font-weight: 600; display: block; font-size: 13px; }
+
+  .tabs { position: sticky; top: 0; z-index: 5; background: linear-gradient(var(--bg) 80%, transparent);
+    padding: 12px 0 14px; display: flex; gap: 6px; }
+  .tabs button { flex: 1; border: 0; background: var(--card); color: var(--dim); padding: 10px 6px;
+    border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: .15s; }
+  .tabs button.on { background: var(--text); color: #0A0C10; }
+
+  .panel { display: none; animation: in .18s ease; }
+  .panel.on { display: block; }
+  @keyframes in { from { opacity: 0; transform: translateY(4px); } }
+
+  h2 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 26px 2px 10px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+  .card + .card { margin-top: 10px; }
+
+  .now { display: flex; gap: 14px; align-items: center; background:
+    radial-gradient(120% 140% at 0% 0%, rgba(25,211,255,.14), transparent 55%),
+    radial-gradient(120% 140% at 100% 100%, rgba(195,60,255,.16), transparent 55%), var(--card); }
+  .now .label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  .now .name { font-size: 19px; font-weight: 700; margin: 2px 0; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; }
+  .stat b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--dim); font-size: 12px; }
+
+  .logo { width: 64px; height: 44px; flex: none; border-radius: 8px; background: var(--card2);
+    display: grid; place-items: center; overflow: hidden; font-size: 10px; font-weight: 700; color: var(--dim);
+    text-align: center; padding: 3px; }
+  .logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .now .logo { width: 84px; height: 58px; }
+
+  .search { position: relative; }
+  .search input { width: 100%; padding: 14px 16px 14px 44px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--card); outline: none; font-size: 16px; }
+  .search input:focus { border-color: var(--blue); background: var(--card2); }
+  .search svg { position: absolute; left: 16px; top: 50%; translate: 0 -50%; opacity: .55; }
+
+  .list { margin-top: 10px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 12px; }
+  .row + .row { border-top: 1px solid var(--line); border-radius: 0; }
+  .row .meta { flex: 1; min-width: 0; }
+  .row .meta b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .meta span { display: block; color: var(--dim); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .btn { border: 0; border-radius: 999px; padding: 9px 14px; font-weight: 600; cursor: pointer;
+    background: var(--card2); color: var(--text); white-space: nowrap; transition: .15s; }
+  .btn:active { transform: scale(.97); }
+  .btn.primary { background: var(--blue); }
+  .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--dim); }
+  .btn.danger { background: transparent; color: var(--red); border: 1px solid rgba(255,107,114,.35); }
+  .btn.icon { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; }
+  .btn:disabled { opacity: .4; }
+  .btn.wide { width: 100%; padding: 13px; font-size: 15px; }
+
+  .sec-head { display: flex; align-items: center; gap: 8px; }
+  .sec-head input { flex: 1; min-width: 0; border: 0; background: transparent; font-weight: 700; font-size: 17px; outline: none;
+    padding: 6px 8px; margin-left: -8px; border-radius: 8px; }
+  .sec-head input:focus { background: var(--card2); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .chip { display: flex; align-items: center; gap: 8px; background: var(--card2); border: 1px solid var(--line);
+    border-radius: 999px; padding: 4px 6px 4px 4px; max-width: 100%; }
+  .chip .logo { width: 30px; height: 22px; border-radius: 999px; font-size: 8px; }
+  .chip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13.5px; }
+  .chip button { border: 0; background: none; color: var(--faint); font-size: 17px; line-height: 1; cursor: pointer; padding: 0 4px; }
+  .empty { color: var(--dim); text-align: center; padding: 28px 12px; }
+  .empty b { display: block; color: var(--text); font-size: 16px; margin-bottom: 4px; }
+
+  .prov-head { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .prov-head .meta { flex: 1; min-width: 0; }
+  .prov-head b { display: block; font-size: 16px; }
+  .prov-head span { color: var(--dim); font-size: 13px; }
+  .avatar { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-weight: 800;
+    background: linear-gradient(135deg, var(--cyan), var(--blue) 50%, var(--magenta)); color: #fff; flex: none; }
+  .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .form .full { grid-column: 1 / -1; }
+  label { display: block; font-size: 12px; color: var(--dim); margin-bottom: 5px; }
+  .field { width: 100%; padding: 12px 13px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); outline: none; }
+  .field:focus { border-color: var(--blue); }
+
+  .toggle { display: flex; align-items: center; gap: 14px; cursor: pointer; }
+  .toggle + .toggle { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .toggle .meta { flex: 1; }
+  .toggle .meta span { display: block; color: var(--dim); font-size: 13px; }
+  .switch { width: 50px; height: 30px; border-radius: 999px; background: #3A3F48; position: relative; flex: none; transition: .2s; }
+  .switch::after { content: ""; position: absolute; width: 24px; height: 24px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: .2s; }
+  .toggle.on .switch { background: var(--blue); }
+  .toggle.on .switch::after { left: 23px; }
+  select.field { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%), linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 52%, calc(100% - 13px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
+
+  .update { display: flex; align-items: center; gap: 12px; margin-top: 10px; border-color: rgba(30,136,255,.5);
+    background: linear-gradient(90deg, rgba(30,136,255,.18), rgba(195,60,255,.12)), var(--card); }
+  .update .meta { flex: 1; }
+
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(7,8,11,.92); backdrop-filter: blur(12px); border-top: 1px solid var(--line); display: none; z-index: 6; }
+  .bar.on { display: block; }
+  .bar .wrap { padding: 0; display: flex; gap: 10px; align-items: center; }
+  .bar span { color: var(--dim); font-size: 13px; flex: 1; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); translate: -50% 20px; opacity: 0;
+    background: var(--text); color: #0A0C10; padding: 11px 18px; border-radius: 999px; font-weight: 600; font-size: 14px;
+    transition: .25s; pointer-events: none; z-index: 9; max-width: calc(100% - 32px); text-align: center; }
+  .toast.on { opacity: 1; translate: -50% 0; }
+
+  .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; z-index: 10; }
+  .sheet-bg.on { display: block; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 11; background: var(--panel); border-radius: 20px 20px 0 0;
+    padding: 10px 16px calc(20px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: .22s; max-width: 720px; margin: 0 auto; }
+  .sheet.on { transform: none; }
+  .sheet .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 14px; }
+  .sheet h3 { margin: 0 0 4px; font-size: 17px; }
+  .sheet p { margin: 0 0 14px; color: var(--dim); font-size: 13px; }
+  .sheet .opt { display: flex; width: 100%; text-align: left; padding: 14px; border-radius: 12px; border: 0; background: var(--card);
+    margin-bottom: 8px; cursor: pointer; font-weight: 600; justify-content: space-between; }
+  .sheet .opt span { color: var(--dim); font-weight: 400; }
+
+  .pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .pad .btn { padding: 15px; font-size: 15px; border-radius: var(--r); background: var(--card); border: 1px solid var(--line); }
+  .pad .btn:active { background: var(--card2); }
+  .chipbar { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; scrollbar-width: none; scroll-snap-type: x proximity; }
+  .chipbar::-webkit-scrollbar { display: none; }
+  .gname { font-size: 12px; color: var(--dim); margin: 6px 2px 8px; font-weight: 600; }
+  .cchip { flex: none; scroll-snap-align: start; border: 1px solid var(--line); background: var(--card); color: var(--text);
+    border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 13.5px; cursor: pointer; white-space: nowrap; }
+  .cchip small { color: var(--faint); font-weight: 500; margin-left: 6px; }
+  .cchip.on { background: var(--text); color: #0A0C10; border-color: var(--text); }
+  .cchip.on small { color: #4A5160; }
+  .row.playing { background: linear-gradient(90deg, rgba(30,136,255,.16), transparent); }
+  .badge { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--blue);
+    border: 1px solid rgba(30,136,255,.5); border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
+  .blocked { min-height: 80vh; display: grid; place-items: center; text-align: center; color: var(--dim); }
+  .blocked b { color: var(--text); font-size: 18px; display: block; margin: 12px 0 6px; }
+  @media (min-width: 560px) { header img { height: 40px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="/logo.png" alt="TVMate">
+    <div class="dev" id="dev"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-t="watch" class="on">Watch</button>
+    <button data-t="pins">Pinned</button>
+    <button data-t="providers">Providers</button>
+    <button data-t="settings">Settings</button>
+  </nav>
+
+  <main id="app">
+    <section class="panel on" id="watch">
+      <div class="card now" id="now"></div>
+      <div class="pad">
+        <button class="btn" onclick="zap(-1)">▼ Previous channel</button>
+        <button class="btn" onclick="zap(1)">▲ Next channel</button>
+      </div>
+      <div id="updateCard"></div>
+      <h2>Find a channel</h2>
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search channels, e.g. sky sports" autocomplete="off" enterkeyhint="search">
+      </div>
+      <div class="list card" id="results" hidden></div>
+      <h2>Browse</h2>
+      <div id="groups"></div>
+      <div class="card list" id="catList" hidden></div>
+      <h2>Library</h2>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="panel" id="pins">
+      <h2>Pinned sections</h2>
+      <p style="color:var(--dim);margin:-4px 2px 12px;font-size:13.5px">These appear at the top of the TV guide, in this order.</p>
+      <div id="pinList"></div>
+      <button class="btn primary wide" style="margin-top:14px" onclick="addSection()">＋ New section</button>
+    </section>
+
+    <section class="panel" id="providers">
+      <h2>Xtream providers</h2>
+      <div id="provList"></div>
+      <button class="btn ghost wide" style="margin-top:12px" onclick="addProvider()">＋ Add provider</button>
+    </section>
+
+    <section class="panel" id="settings">
+      <h2>Sources</h2>
+      <div class="card">
+        <div class="toggle" id="t_mi" onclick="flip('mi_on')">
+          <div class="meta"><b>Free channels</b><span>Xiaomi TV+ catalogue from every region, dead channels removed</span></div>
+          <div class="switch"></div>
+        </div>
+        <div class="toggle" id="t_extras" onclick="flip('extras')">
+          <div class="meta"><b>24/7, PPV and event channels</b><span>Off keeps provider lists to real live channels</span></div>
+          <div class="switch"></div>
+        </div>
+      </div>
+      <h2>Channel lists</h2>
+      <div class="card">
+        <label for="refresh">Refresh automatically</label>
+        <select class="field" id="refresh" onchange="dirty()">
+          <option value="1">Every hour</option>
+          <option value="6">Every 6 hours</option>
+          <option value="12">Every 12 hours</option>
+          <option value="24">Daily</option>
+          <option value="0">Only when saved</option>
+        </select>
+        <button class="btn ghost wide" style="margin-top:12px" onclick="refreshNow()">Refresh channels now</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="bar" id="bar"><div class="wrap">
+  <span>Unsaved changes. Saving reloads the TV's channel lists.</span>
+  <button class="btn ghost" onclick="load()">Discard</button>
+  <button class="btn primary" onclick="saveSettings()">Save</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet"></div>
+
+<script>
+const K = new URLSearchParams(location.search).get('k') || '';
+let S = null, draft = null, pinTarget = null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function api(path, body, params = {}) {
+  const qs = new URLSearchParams({ k: K, ...params });
+  const r = await fetch(`${path}?${qs}`, body === undefined ? {} : { method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body) });
+  if (r.status === 403) { blocked(); throw new Error('forbidden'); }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+function blocked() {
+  document.querySelector('.wrap').innerHTML = `<div class="blocked"><div><img src="/logo.png" style="height:40px"><b>Scan the QR code again</b>Open TVMate on the TV, go to Settings and scan the code with your phone.</div></div>`;
+}
+
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+function logo(c, cls = 'logo') {
+  const fallback = esc((c.name || '').slice(0, 14));
+  return `<div class="${cls}">${c.logo ? `<img src="${esc(c.logo)}" alt="" loading="lazy" data-n="${fallback}" onerror="this.parentNode.textContent=this.dataset.n">` : fallback}</div>`;
+}
+
+function ago(ms) {
+  if (!ms) return 'never';
+  const m = Math.round((Date.now() - ms) / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + ' min ago';
+  const h = Math.round(m / 60);
+  return h < 24 ? h + ' h ago' : Math.round(h / 24) + ' d ago';
+}
+
+/* ---------- tabs ---------- */
+function tab(name) {
+  const t = document.querySelector(`.tabs button[data-t="${name}"]`) || document.querySelector('.tabs button');
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === t.dataset.t));
+  history.replaceState(null, '', '#' + t.dataset.t);
+  scrollTo({ top: 0 });
+}
+$('#tabs').onclick = e => { const t = e.target.closest('button'); if (t) tab(t.dataset.t); };
+if (location.hash) tab(location.hash.slice(1));
+
+/* ---------- state ---------- */
+async function load() {
+  S = await api('/api/state');
+  draft = JSON.parse(JSON.stringify(S.settings));
+  $('#bar').classList.remove('on');
+  render();
+  loadCats();
+}
+
+function render() {
+  $('#dev').innerHTML = `<b>${esc(S.device)}</b>TVMate ${esc(S.version)}`;
+  const p = S.playing;
+  $('#now').innerHTML = p
+    ? `${logo(p)}<div style="flex:1;min-width:0"><div class="label">Now on TV</div><div class="name">${esc(p.name)}</div><div style="color:var(--dim);font-size:13px">${esc(p.source)}</div></div>`
+    : `<div><div class="label">Now on TV</div><div class="name">Nothing playing</div></div>`;
+  $('#updateCard').innerHTML = S.update
+    ? `<div class="card update"><div class="meta"><b>Update available</b><div style="color:var(--dim);font-size:13px">Version ${esc(S.update)} is ready to install.</div></div><button class="btn primary" onclick="update(this)">Install</button></div>` : '';
+  const groups = Object.entries(S.counts || {}).filter(([g]) => g !== 'Pinned');
+  $('#stats').innerHTML = `<div class="stat"><b>${S.channels.toLocaleString()}</b><span>channels</span></div>` +
+    groups.map(([g, n]) => `<div class="stat"><b>${n.toLocaleString()}</b><span>${esc(g)}</span></div>`).join('') +
+    `<div class="stat"><b style="font-size:16px;padding-top:4px">${ago(S.refreshedAt)}</b><span>last refreshed</span></div>`;
+  renderPins(); renderProviders(); renderSettings();
+  if (lastResults.length) $('#results').innerHTML = lastResults.map(chRow).join('');
+  if (curCat !== null && catItems.length) renderCat();
+}
+
+/* ---------- watch / browse ---------- */
+let cats = [], curCat = null, catItems = [], catTotal = 0;
+
+function chRow(c) {
+  const on = S.playing && S.playing.key === c.key;
+  return `<div class="row${on ? ' playing' : ''}">${logo(c)}
+    <div class="meta"><b>${esc(c.name)}</b><span>${esc(c.source)}</span></div>
+    <button class="btn icon" title="Pin" onclick='pinSheet(${JSON.stringify(c).replace(/'/g, "&#39;")})'>★</button>
+    ${on ? `<span class="badge">On TV</span>` : `<button class="btn primary" onclick="play('${esc(c.key)}', this)">▶ Play</button>`}
+  </div>`;
+}
+
+async function loadCats() {
+  cats = await api('/api/cats');
+  const groups = {};
+  cats.forEach(c => (groups[c.group] = groups[c.group] || []).push(c));
+  $('#groups').innerHTML = Object.entries(groups).map(([g, list]) => `
+    <div class="gname">${esc(g)}</div>
+    <div class="chipbar">${list.map(c => `<button class="cchip${curCat === c.i ? ' on' : ''}" onclick="openCat(${c.i})">${esc(c.name)}<small>${c.count.toLocaleString()}</small></button>`).join('')}</div>`).join('')
+    || `<div class="card empty"><b>No channels yet</b>Add a provider or turn on free channels.</div>`;
+}
+
+async function openCat(i, more) {
+  if (!more) { curCat = i; catItems = []; loadCats(); }
+  const r = await api('/api/cat', undefined, { i, from: catItems.length });
+  catItems = catItems.concat(r.channels); catTotal = r.total;
+  renderCat();
+}
+
+function renderCat() {
+  const box = $('#catList');
+  box.hidden = false;
+  const c = cats.find(x => x.i === curCat);
+  box.innerHTML = `<div class="gname" style="margin:2px 6px 6px">${esc(c ? c.group + ' · ' + c.name : '')}</div>` +
+    catItems.map(chRow).join('') +
+    (catItems.length < catTotal ? `<button class="btn ghost wide" style="margin-top:10px" onclick="openCat(${curCat}, true)">Show more (${(catTotal - catItems.length).toLocaleString()} left)</button>` : '');
+}
+
+async function zap(d) {
+  await api('/api/zap', '', { d });
+  setTimeout(async () => { S = await api('/api/state'); render(); }, 700);
+}
+
+/* ---------- watch / search ---------- */
+let qT, lastResults = [];
+$('#q').oninput = e => { clearTimeout(qT); qT = setTimeout(() => search(e.target.value), 160); };
+
+async function search(q) {
+  const box = $('#results');
+  if (!q.trim()) { box.hidden = true; return; }
+  const res = await api('/api/search', undefined, { q });
+  box.hidden = false;
+  lastResults = res;
+  box.innerHTML = res.length ? res.map(chRow).join('') : `<div class="empty"><b>No channels match</b>Try fewer words, or check the spelling.</div>`;
+}
+
+async function play(key, btn) {
+  if (btn) btn.disabled = true;
+  await api('/api/play', '', { key });
+  toast('Playing on TV');
+  setTimeout(async () => { S = await api('/api/state'); render(); if (btn) btn.disabled = false; }, 900);
+}
+
+async function update(btn) {
+  btn.disabled = true;
+  const r = await api('/api/update', '');
+  toast(r.message);
+}
+
+async function refreshNow() {
+  await api('/api/refresh', '');
+  toast('Refreshing channel lists on the TV');
+}
+
+/* ---------- pinned sections ---------- */
+function pinsPayload(pins) { return pins.map(p => ({ name: p.name, keys: p.channels.map(c => c.key) })); }
+
+async function savePins(msg) {
+  S = await api('/api/pins', pinsPayload(S.pins));
+  renderPins();
+  loadCats();
+  if (msg) toast(msg);
+}
+
+function renderPins() {
+  const el = $('#pinList');
+  if (!S.pins.length) {
+    el.innerHTML = `<div class="card empty"><b>No pinned sections yet</b>Create one, then add your favourite channels. They'll sit at the top of the TV guide.</div>`;
+    return;
+  }
+  el.innerHTML = S.pins.map((p, i) => `
+    <div class="card">
+      <div class="sec-head">
+        <input value="${esc(p.name)}" aria-label="Section name" onchange="renamePin(${i}, this.value)">
+        <button class="btn icon" onclick="movePin(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up">↑</button>
+        <button class="btn icon" onclick="movePin(${i}, 1)" ${i === S.pins.length - 1 ? 'disabled' : ''} title="Move down">↓</button>
+        <button class="btn icon danger" onclick="deletePin(${i})" title="Delete section">✕</button>
+      </div>
+      <div class="chips">${p.channels.length ? p.channels.map((c, j) => `
+        <div class="chip">${logo(c)}<span>${esc(c.name)}</span><button onclick="unpin(${i}, ${j})" aria-label="Remove">×</button></div>`).join('')
+        : `<span style="color:var(--faint);font-size:13.5px">No channels yet.</span>`}</div>
+      <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input placeholder="Add a channel to ${esc(p.name)}" oninput="pinSearch(${i}, this)" autocomplete="off"></div>
+      <div class="list" id="pr${i}"></div>
+    </div>`).join('');
+}
+
+let psT;
+function pinSearch(i, input) {
+  clearTimeout(psT);
+  psT = setTimeout(async () => {
+    const box = $('#pr' + i);
+    if (!input.value.trim()) { box.innerHTML = ''; return; }
+    const res = await api('/api/search', undefined, { q: input.value });
+    const have = new Set(S.pins[i].channels.map(c => c.key));
+    box.innerHTML = res.slice(0, 8).map(c => `
+      <div class="row">${logo(c)}<div class="meta"><b>${esc(c.name)}</b><span>${esc(c.source)}</span></div>
+      ${have.has(c.key) ? `<span style="color:var(--green);font-size:13px">Added</span>` :
+        `<button class="btn" onclick='addToPin(${i}, ${JSON.stringify(c).replace(/'/g, "&#39;")})'>＋ Add</button>`}</div>`).join('')
+      || `<div class="empty" style="padding:14px">No matches</div>`;
+  }, 160);
+}
+
+async function addToPin(i, c) {
+  if (!S.pins[i].channels.some(x => x.key === c.key)) S.pins[i].channels.push(c);
+  await savePins(`Added ${c.name} to ${S.pins[i].name}`);
+}
+async function unpin(i, j) { const c = S.pins[i].channels.splice(j, 1)[0]; await savePins(`Removed ${c.name}`); }
+async function renamePin(i, v) { S.pins[i].name = v.trim() || 'Pinned'; await savePins('Section renamed'); }
+async function movePin(i, d) { const [p] = S.pins.splice(i, 1); S.pins.splice(i + d, 0, p); await savePins(); }
+async function deletePin(i) {
+  if (!confirm(`Delete "${S.pins[i].name}"? The channels stay available in the guide.`)) return;
+  S.pins.splice(i, 1); await savePins('Section deleted');
+}
+async function addSection(name) {
+  name = name || prompt('Section name', S.pins.length ? 'Favourites ' + (S.pins.length + 1) : 'Favourites');
+  if (!name) return null;
+  S.pins.push({ name: name.trim(), channels: [] });
+  await savePins(`Created ${name.trim()}`);
+  return S.pins.length - 1;
+}
+
+function pinSheet(c) {
+  pinTarget = c;
+  $('#sheet').innerHTML = `<div class="grab"></div><h3>Pin ${esc(c.name)}</h3><p>Choose a section on the TV guide.</p>` +
+    S.pins.map((p, i) => `<button class="opt" onclick="pinTo(${i})">${esc(p.name)}<span>${p.channels.length} channels</span></button>`).join('') +
+    `<button class="opt" onclick="pinTo(-1)" style="color:var(--blue)">＋ New section</button>`;
+  $('#sheet').classList.add('on'); $('#sheetBg').classList.add('on');
+}
+function closeSheet() { $('#sheet').classList.remove('on'); $('#sheetBg').classList.remove('on'); }
+async function pinTo(i) {
+  closeSheet();
+  if (i < 0) { i = await addSection(); if (i === null) return; }
+  await addToPin(i, pinTarget);
+}
+
+/* ---------- providers ---------- */
+let open = new Set();
+function renderProviders() {
+  const el = $('#provList');
+  if (!draft.providers.length) {
+    el.innerHTML = `<div class="card empty"><b>No providers</b>Add your Xtream Codes login to merge its live channels into the guide.</div>`;
+    return;
+  }
+  el.innerHTML = draft.providers.map((p, i) => `
+    <div class="card">
+      <div class="prov-head" onclick="toggleProv(${i})">
+        <div class="avatar">${esc((p.name || '?').slice(0, 1).toUpperCase())}</div>
+        <div class="meta"><b>${esc(p.name || 'New provider')}</b><span>${esc((p.server || 'No server yet').replace(/^https?:\/\//, ''))}${p.user ? ' · ' + esc(p.user) : ''}</span></div>
+        <span style="color:var(--dim);font-size:13px">${open.has(i) ? 'Done' : 'Edit'}</span>
+      </div>
+      ${open.has(i) ? `
+      <div class="form">
+        <div><label>Name</label><input class="field" value="${esc(p.name)}" oninput="setProv(${i},'name',this.value)" placeholder="Strong 8K"></div>
+        <div><label>Server URL</label><input class="field" value="${esc(p.server)}" oninput="setProv(${i},'server',this.value)" placeholder="http://host:port" inputmode="url" autocapitalize="off"></div>
+        <div><label>Username</label><input class="field" value="${esc(p.user)}" oninput="setProv(${i},'user',this.value)" autocapitalize="off" autocorrect="off"></div>
+        <div><label>Password</label><input class="field" type="password" value="${esc(p.pass)}" oninput="setProv(${i},'pass',this.value)"></div>
+        <div class="full"><button class="btn danger" onclick="removeProv(${i})">Remove provider</button></div>
+      </div>` : ''}
+    </div>`).join('');
+}
+function toggleProv(i) { open.has(i) ? open.delete(i) : open.add(i); renderProviders(); }
+function setProv(i, k, v) { draft.providers[i][k] = v; dirty(); }
+function addProvider() { draft.providers.push({ name: '', server: '', user: '', pass: '' }); open.add(draft.providers.length - 1); renderProviders(); dirty(); }
+function removeProv(i) { draft.providers.splice(i, 1); open = new Set(); renderProviders(); dirty(); }
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  $('#t_mi').classList.toggle('on', draft.mi_on);
+  $('#t_extras').classList.toggle('on', draft.extras);
+  $('#refresh').value = String(draft.refresh_h);
+}
+function flip(k) { draft[k] = !draft[k]; renderSettings(); dirty(); }
+function dirty() { draft.refresh_h = +$('#refresh').value; $('#bar').classList.add('on'); }
+
+async function saveSettings() {
+  const bad = draft.providers.find(p => !p.server.trim() || !p.user.trim());
+  if (bad) { toast('Each provider needs a server and username'); return; }
+  S = await api('/api/settings', draft);
+  draft = JSON.parse(JSON.stringify(S.settings));
+  open = new Set();
+  $('#bar').classList.remove('on');
+  render();
+  toast('Saved. The TV is reloading channels.');
+}
+
+load().catch(e => { if (e.message !== 'forbidden') toast('Can\'t reach the TV. Is TVMate open?'); });
+setInterval(() => { if (!$('#bar').classList.contains('on') && document.visibilityState === 'visible' && !document.activeElement.matches('input, select'))
+  api('/api/state').then(s => { S = s; render(); }).catch(() => {}); }, 15000);
+</script>
+</body>
+</html>
