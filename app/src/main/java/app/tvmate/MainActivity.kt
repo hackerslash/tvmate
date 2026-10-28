@@ -44,7 +44,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private const val TOUR_VERSION = 1
+private const val TOUR_VERSION = 2
 
 @OptIn(UnstableApi::class)
 class MainActivity : Activity(), Remote.Host {
@@ -77,6 +77,8 @@ class MainActivity : Activity(), Remote.Host {
     private var catIdx = 0
     private var refreshing = false
     private var lastBack = 0L
+    private var okDown = false
+    private var okHeld = false
     private var cacheLoaded = false
     private val rowsAdapter = RowsAdapter()
     private val railAdapter = RailAdapter()
@@ -195,7 +197,7 @@ class MainActivity : Activity(), Remote.Host {
         Step("Change channel", "Press UP for the next channel and DOWN for the previous one.", setOf("up", "down")),
         Step("Open the guide", "Press LEFT or OK to browse categories, see what's on now and next, and search.", setOf("left", "ok")),
         Step("What's playing", "Press RIGHT to see the current programme, its time and description.", setOf("right")),
-        Step("Settings", "Press MENU to add Xtream providers, switch sources or turn on the phone remote.", keycap = "≡  MENU"),
+        Step("Settings", "Hold OK for a moment to add Xtream providers, switch sources or turn on the phone remote.", keycap = "Hold  OK"),
         Step("Going back", "BACK closes the guide. Press BACK twice to leave TVMate.", keycap = "BACK"),
     )
     private var step = 0
@@ -376,6 +378,18 @@ class MainActivity : Activity(), Remote.Host {
             if (e.action == KeyEvent.ACTION_UP) back()
             return true
         }
+        // Most TV remotes have no MENU key: in the player a tap on OK opens the guide, holding it opens Settings.
+        val ok = e.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || e.keyCode == KeyEvent.KEYCODE_ENTER
+        if (ok && guide.visibility != View.VISIBLE && tour.visibility != View.VISIBLE &&
+            updateCard.visibility != View.VISIBLE && !installing) {
+            when {
+                e.action == KeyEvent.ACTION_DOWN && e.repeatCount == 0 -> { okHeld = false; okDown = true }
+                e.action == KeyEvent.ACTION_DOWN && !okHeld -> { okHeld = true; openSettings() }
+                e.action == KeyEvent.ACTION_UP && okDown && !okHeld -> { okDown = false; openGuide() }
+                e.action == KeyEvent.ACTION_UP -> okDown = false
+            }
+            return true
+        }
         if (e.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(e)
         if (tour.visibility == View.VISIBLE) { tourKey(e.keyCode); return true }
         if (e.keyCode == KeyEvent.KEYCODE_MENU || e.keyCode == KeyEvent.KEYCODE_SETTINGS) { openSettings(); return true }
@@ -390,8 +404,7 @@ class MainActivity : Activity(), Remote.Host {
         when (e.keyCode) {
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> zap(+1)
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> zap(-1)
-            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
-            KeyEvent.KEYCODE_GUIDE -> openGuide()
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_GUIDE -> openGuide()
             KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_INFO -> showBanner()
             else -> return super.dispatchKeyEvent(e)
         }

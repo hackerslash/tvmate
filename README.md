@@ -10,7 +10,7 @@
 
 - **Clean Xtream lists.** Add any number of providers. VOD, 24/7 loops and PPV placeholders are dropped, SD/HD/FHD/4K variants merge into one channel with automatic fallback, and everything is regrouped by genre and country.
 - **Free channels built in.** Optionally include the Xiaomi TV+ catalogue from every region, deduplicated, with dead streams removed.
-- **Made for the remote.** UP/DOWN zaps, LEFT opens the guide, MENU opens settings. A short tour on first launch shows the rest.
+- **Made for the remote.** UP/DOWN zaps, LEFT opens the guide, holding OK opens settings. A short tour on first launch shows the rest.
 - **Phone remote.** Turn it on, scan the QR code, and browse, play, pin channels or manage providers from your phone. Off by default.
 - **Updates itself** from GitHub releases.
 
@@ -27,14 +27,14 @@
 
 ## Install
 
-Sideload the APK from [Releases](../../releases/latest), e.g. `adb install TVMate-1.0.2.apk`. Later versions install from inside the app.
+Sideload the APK from [Releases](../../releases/latest), e.g. `adb install TVMate-x.y.z.apk`. Later versions install from inside the app.
 
 | Key | Action |
 |---|---|
 | UP / DOWN | Next / previous channel |
 | LEFT or OK | Guide |
 | RIGHT | Programme info |
-| MENU | Settings |
+| Hold OK | Settings |
 | BACK | Close, or twice to exit |
 
 ## Build
